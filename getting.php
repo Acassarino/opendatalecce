@@ -1,4 +1,4 @@
-  <?php
+<?php
 
 include(dirname(__FILE__).'/../settings_t.php');
 
@@ -148,6 +148,46 @@ class getdata {
     }
 
 
+        public function get_oc($titolo)
+        {
+          $titolo=str_replace(" ","%20",$titolo);
+          $titolo=strtoupper($titolo);
+          $url ="https://spreadsheets.google.com/tq?tqx=out:csv&tq=SELECT%20%2A%20WHERE%20F%20LIKE%20%27%25";
+          $url .=$titolo;
+          $url .="%25%27&key=1bnHWJAXpVWYyaf9kk4tjiNHzsJp4AEB1S-C97NFw0mQ&gid=1584224163";
+          $inizio=1;
+          $homepage ="";
+         //  echo $url;
+          $csv = array_map('str_getcsv', file($url));
+
+          $count = 0;
+          foreach($csv as $data=>$csv1){
+            $count = $count+1;
+          }
+          if ($count == 0 || $count == 1){
+            $homepage="Nessun risultato";
+            return   $homepage;
+          }
+          if ($count > 40){
+            $homepage="Troppi risultati, affina la ricerca";
+            return   $homepage;
+          }
+
+        //  echo $count;
+          for ($i=$inizio;$i<$count;$i++){
+
+            $homepage .="\n";
+            $homepage .="Defunto: ".$csv[$i][5]."\n";
+            if ($csv[$i][7] !=NULL)$homepage .="Nato il: ".$csv[$i][7]."\n";
+            if ($csv[$i][8] !=NULL)$homepage .="a ".$csv[$i][8]."\n";
+            if ($csv[$i][9] !=NULL)$homepage .="Deceduto il: ".$csv[$i][9]."\n";
+            if ($csv[$i][10] !=NULL)$homepage .="a ".$csv[$i][10]."\n";
+            $homepage .="Ubicazione: ".$csv[$i][6]."\n";
+            $homepage .="____________\n";
+
+        }
+      return   $homepage;
+      }
 
   public function get_libro($titolo)
   {
@@ -181,6 +221,8 @@ class getdata {
   }
 return   $homepage;
 }
+
+
   public function get_fermateba($lat,$lon,$r)
   {
 
@@ -1115,7 +1157,7 @@ $homepage .="Indir.: ".$csv[$i][4]."\n";
 	case "lecce":
 	// un google sheet fa il parsing del dataset presente su dati.comune.lecce.it
 	// servizio sperimentale e Demo.
-	$csv = array_map('str_getcsv', file("https://docs.google.com/spreadsheets/d/1IfmPLAFr7Ce0Iyd0fj_LQu1EPR0-vJMY5kaWS7IuRAA/pub?output=csv"));
+	$csv = array_map('str_getcsv', file("https://docs.google.com/spreadsheets/d/1IfmPLAFr7Ce0Iyd0fj_LQu1EPR0-vJMY5kaWS7IuRAA/pub?gid=0&single=true&output=csv"));
 	//$homepage  =$csv[0][0];
 	$homepage .="\n";
 	$count = 0;
@@ -1129,6 +1171,7 @@ $homepage .="Indir.: ".$csv[$i][4]."\n";
 	$homepage .="Descrizione: ".$csv[$i][2]."\n";
 	$homepage .="Data: ".$csv[$i][3]."\n";
 	$homepage .="Luogo: ".$csv[$i][4]."\n";
+  if ($csv[$i][7] !=NULL) $homepage .="Nota: ".$csv[$i][7]."\n";
 	$homepage .="Puoi visualizzarlo su :\nhttp://www.openstreetmap.org/?mlat=".$csv[$i][5]."&mlon=".$csv[$i][6]."#map=19/".$csv[$i][5]."/".$csv[$i][6];
 
 	//$homepage .="Mappa: http://www.openstreetmap.org/#map=19/".$csv[$i][4]."/".$csv[$i][5];
