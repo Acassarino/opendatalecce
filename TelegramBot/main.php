@@ -899,7 +899,7 @@ $db = NULL;
     			print_r($reply_to_msg['message_id']);
     			$db->exec($statement);
 
-    if ($text==="location" || $text==="benzine" || $text==="farmacie" || $text==="musei" || $text==="fermate" || $text==="sosta" || $text==="defibrillatori1"|| $text==="DAE"|| $text==="dae" || $text=="hotspot" || $text=="Hot Spot"|| $text=="hot spot")
+    if ($text==="location" || $text==="benzine" || $text==="farmacie" || $text==="musei" || $text==="fermate" || $text==="sosta" || $text==="defibrillatori1"|| $text==="DAE"|| $text==="dae" || $text=="hotspot" || $text=="Hot Spot"|| $text=="hot spot" || $text ==="stalli"|| $text ==="accessibili")
     {
       $around=AROUND;
     	$tag="amenity=pharmacy";
@@ -918,7 +918,7 @@ $db = NULL;
               $log=$today. ",sosta sent," .$chat_id. "\n";
               exit;
           }
-          if ($text==="location") {
+          elseif ($text==="location") {
                  $lon=$row[0]['lng'];
                 $lat=$row[0]['lat'];
 
@@ -933,17 +933,26 @@ $db = NULL;
 
                     exit;
                 }
-    if ($text==="musei") $tag="tourism=museum";
-    if ($text==="benzine") $tag="amenity=fuel";
-    if ($text==="fermate") {
+    elseif ($text==="musei") $tag="tourism=museum";
+    elseif ($text==="benzine") $tag="amenity=fuel";
+    elseif ($text==="stalli") {
+      $tag="capacity:disabled";
+      $nome="Stallo per disabile";
+      $around=200;
+    }
+    elseif ($text==="accessibili") {
+      $tag="wheelchair=yes";
+      $around=200;
+    }
+    elseif ($text==="fermate") {
     $tag="highway=bus_stop";
     $around=500;
     }
-    if ($text==="defibrillatori" || $text==="dae" || $text==="DAE"){
+    elseif ($text==="defibrillatori" || $text==="dae" || $text==="DAE"){
       $tag="emergency=defibrillator";
       $around=500;
     }
-    if ($text==="hotspot" || $text==="Hot Spot" || $text=="hot spot"){
+    elseif ($text==="hotspot" || $text==="Hot Spot" || $text=="hot spot"){
       $tag="internet_access=wlan";
       $nome="Hot Spot Lecce Wireless";
       $around=500;
@@ -992,7 +1001,7 @@ $db = NULL;
     						if($nome=="")
     						{
                   if ($text==="hotspot" || $text==="Hot Spot" || $text=="hot spot") $nome="Hot Spot Lecce Wireless";
-
+                  if ($text==="stalli" )   $nome="Stallo per disabile";
     							//	$nome=utf8_encode("Luogo non presente o identificato su Openstreetmap");
     							//	$content = array('chat_id' => $chat_id, 'text' =>$nome);
     							//	$telegram->sendMessage($content);
@@ -1055,8 +1064,8 @@ if ($miles >=1){
     					 }
               //if ($text=="farmacie") $around="5km";
               if ($around==500) $around="500 mt";
-              if ($around!=500) $around="5km";
-
+              elseif ($around==200) $around="200 mt";
+              else $around="5km";
     					//crediti dei dati
     					if((bool)$osm_data_dec->node)
     					{
@@ -1064,7 +1073,7 @@ if ($miles >=1){
     						$bot_request_message=$telegram->sendMessage($content);
     					}else
     					{
-    						$content = array('chat_id' => $chat_id, 'text' => utf8_encode("Non ci sono sono luoghi vicini, mi spiace! Se ne conosci uno nelle vicinanze mappalo su www.openstreetmap.org"),'disable_web_page_preview'=>true);
+    						$content = array('chat_id' => $chat_id, 'text' => utf8_encode("Non ci sono sono ".$text." vicini, mi spiace! Se ne conosci uno nelle vicinanze mappalo su www.openstreetmap.org"),'disable_web_page_preview'=>true);
     						$bot_request_message=$telegram->sendMessage($content);
     					}
     }

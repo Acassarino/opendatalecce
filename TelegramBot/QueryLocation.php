@@ -10,10 +10,14 @@ function give_osm_data($lat,$lon,$tag,$around)
 	//$around =AROUND; 				//Number of meters to calculate radius to search
 	$max=MAX;						//max number of points to search
 	 						//tag to search accoring to Overpass_API Query Language
+if ($tag=="capacity:disabled"){
+	$query .= 'node(around:'.$around.','.$lat.','.$lon.')["capacity:disabled"];out '.$max.';';
+
+}else 	$query .= 'node(around:'.$around.','.$lat.','.$lon.')['.$tag.'];out '.$max.';';
 
 	//inserire qui la query Overpass modificando i paramentri
 //		$query = '(node(around:'.$around.','.$lat.','.$lon.')['.$tag.'];way(around:'.$around.','.$lat.','.$lon.')['.$tag.'];relation(around:'.$around.','.$lat.','.$lon.')['.$tag.'];);out body; >;out skel qt '.$max.';';
-$query .= 'node(around:'.$around.','.$lat.','.$lon.')['.$tag.'];out '.$max.';';
+	$query .= 'node(around:'.$around.','.$lat.','.$lon.')[".$tag."];out '.$max.';';
 //$query .= 'relation(around:'.$around.','.$lat.','.$lon.')['.$tag.'];out '.$max.';';
 	$context = stream_context_create( array('http' => array(
 		'method'  => 'POST',
