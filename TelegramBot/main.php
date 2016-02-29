@@ -56,7 +56,8 @@ $db = NULL;
 		date_default_timezone_set('Europe/Rome');
 		$today = date("Y-m-d H:i:s");
 
-		if ($text == "/start") {
+
+  if ($text == "/start") {
 				$log=$today. ",new chat started," .$chat_id. "\n";
 			}
       elseif (strpos($text,'?') !== false) {
@@ -118,7 +119,7 @@ $db = NULL;
 
             }
 
-              $log=$today. ",bandi e gare sent," .$chat_id. "\n";
+              $log=$today. ",news sent," .$chat_id. "\n";
       		}
           elseif ($text == "/bandi e gare" || $text == "bandi e gare") {
             $reply = "Sto interrogano la banca dati per le ultime news su Bandi e Gare...\n";
@@ -133,9 +134,10 @@ $db = NULL;
                 $telegram->sendMessage($content);
 
             }
+                  $log=$today. ",bandi e gare sent," .$chat_id. "\n";
           }elseif (strpos($text,'c:') !== false) {
             $text=str_replace("c:","",$text);
-            $reply = "Servizio sperimentale openCimitero. Sto cercando l'ubicazione per il defunto: ".$text;
+            $reply = "Sto cercando l'ubicazione per il defunto: ".$text;
             $content = array('chat_id' => $chat_id, 'text' => $reply,'disable_web_page_preview'=>true);
             $telegram->sendMessage($content);
             $reply1 = $data->get_oc($text);
@@ -216,7 +218,9 @@ $db = NULL;
         //richiede defibrillatori di oggi a Lecce
         elseif ($text == "/defibrillatori" || $text == "defibrillatori") {
 
-
+          $img = curl_file_create('dae.png','image/png');
+          $contentp = array('chat_id' => $chat_id, 'photo' => $img);
+          $telegram->sendPhoto($contentp);
           $avviso ="\nInterrogazione in corso al database opendata...";
 
           $content = array('chat_id' => $chat_id, 'text' => $avviso,'disable_web_page_preview'=>true);
@@ -240,9 +244,7 @@ $db = NULL;
 //        $telegram->sendMessage($content);
 
         $log=$today. ",dae sent," .$chat_id. "\n";
-        $img = curl_file_create('dae.png','image/png');
-        $contentp = array('chat_id' => $chat_id, 'photo' => $img);
-        $telegram->sendPhoto($contentp);
+
 
         }
         elseif ($text == "/orari scuole" || $text == "orari scuole") {
@@ -324,12 +326,53 @@ $db = NULL;
         }
         elseif ($text == "tariffasosta" && $location==null) {
 
-          $reply ="Invia la tua posizione cliccando sulla graffetta \xF0\x9F\x93\x8E e poi digita: sosta";
+          $reply ="Invia la tua posizione cliccando sulla graffetta \xF0\x9F\x93\x8E e poi clicca /sosta";
 
           $content = array('chat_id' => $chat_id, 'text' => $reply);
           $telegram->sendMessage($content);
 
             $log=$today. ",tariffa_antegps sent," .$chat_id. "\n";
+
+  			}
+        elseif ($text == "parcometri" && $location==null) {
+
+          $reply ="Invia la tua posizione cliccando sulla graffetta \xF0\x9F\x93\x8E e poi clicca /parcometri";
+
+          $content = array('chat_id' => $chat_id, 'text' => $reply);
+          $telegram->sendMessage($content);
+
+            $log=$today. ",parcometri_antegps sent," .$chat_id. "\n";
+
+  			}
+        elseif ($text == "luoghi accessibili" && $location==null) {
+
+          $reply ="Invia la tua posizione cliccando sulla graffetta \xF0\x9F\x93\x8E e poi clicca /accessibili";
+          $reply .="\nPuoi contribuire anche tu a censire i luoghi accessibili da disabili in carrozzella";
+          $reply .="\nUsa l'app gratuita Wheelmap oppure direttamente su openstreetmap usa il tag: wheelchair=yes\n";
+
+          $content = array('chat_id' => $chat_id, 'text' => $reply);
+          $telegram->sendMessage($content);
+
+            $log=$today. ",accessibili_antegps sent," .$chat_id. "\n";
+
+  			}
+        elseif ($text == "stalli parc.disab." && $location==null) {
+
+          $reply ="Invia la tua posizione cliccando sulla graffetta \xF0\x9F\x93\x8E e poi clicca /stalli";
+          $reply .="\nNota bene: sono indicati tutti gli stalli sosta per disabili, ma alcuni potrebbero essere riservati";
+
+          $content = array('chat_id' => $chat_id, 'text' => $reply);
+          $telegram->sendMessage($content);
+
+            $log=$today. ",stalli_antegps sent," .$chat_id. "\n";
+
+  			}
+        elseif ($text == "opencimitero") {
+
+          $reply ="opencimitero è un servizio sperimentale di ricerca ubicazione sepoltura defunti\n";
+          $reply .="Digita c:nomedefunto\n";
+          $content = array('chat_id' => $chat_id, 'text' => $reply);
+          $telegram->sendMessage($content);
 
   			}
 			//richiede rischi di oggi a Lecce
@@ -689,27 +732,31 @@ $db = NULL;
 			}
 			//crediti
 			elseif ($text == "/informazioni" || $text == "informazioni") {
-				 $reply = ("openDataLecceBot e' un servizio sperimentale e dimostrativo per riuso degli openData del Comune di Lecce.
-				 Applicazione sviluppata da Francesco Piero Paolicelli @piersoft. Codice sorgente per il riuso gratuito: https://goo.gl/bmUNbK
-          \nFonti:
-          Spese Correnti      -> Soldipubblici.gov.it Lic. CC-BY 3.0
-          Bollettini rischi   -> Protezione Civile di Lecce - dataset su dati.comune.lecce.it tramite il progetto InfoAlert365 (A cura: Gaetano Lipari)
-          Eventi culturali    -> Dataset su dati.comune.lecce.it fonte Lecce Events
-          Qualtà dell'Aria    -> Dataset su dati.comune.lecce.it (A cura: Luciano Mangia)
-          L'Acchiappialibro   -> Dataset su dati.comune.lecce.it (A cura: Nuccio Massimiliano)
-          Defibrillatori DAE  -> Dataset su dati.comune.lecce.it (A cura: Alessandro Tondi)
-          Aree sosta          -> Dataset su dati.comune.lecce.it (A cura: Alessandro Tondi)
-          Farmacie            -> Dataset su dati.comune.lecce.it (A cura: Lucio Stefanelli)
-          Monumenti           -> Dataset su dati.comune.lecce.it (A cura: Annarita Cairella)
-          Traffico            -> Dataset su dati.comune.lecce.it (Sarà a cura: Luisella Gallucci)
-          Mensa scolastica    -> Dataset su dati.comune.lecce.it (A cura: Nuccio Massimiliano)
-          Hot Spot            -> Dataset su dati.comune.lecce.it (A cura: Andrea Lezzi)
-          Bandi ed esiti gare -> Dataset su dati.comune.lecce.it (A cura: Andrea Lezzi)
-          News                -> Dataset su dati.comune.lecce.it (A cura: Andrea Lezzi)
-          orari Scuole        -> Dataset su dati.comune.lecce.it (A cura: Nuccio Massimiliano e Elisabetta Indennitate)
-          Benzinai            -> Dataset su openstreemap Lic. odBL
-          Musei               -> Dataset su openstreemap Lic. odBL
-          Meteo e temperatura -> Api pubbliche di www.wunderground.com
+				 $reply = ("openDataLecceBot e' un servizio sperimentale e dimostrativo per riuso degli openData del Comune di Lecce.\n
+Fonti:
+Spese Correnti      -> Soldipubblici.gov.it Lic. CC-BY 3.0
+Bollettini rischi   -> Protezione Civile di Lecce - dataset su dati.comune.lecce.it tramite il progetto InfoAlert365 (A cura: Gaetano Lipari)
+Eventi culturali    -> Dataset su dati.comune.lecce.it fonte Lecce Events
+Qualtà dell'Aria    -> Dataset su dati.comune.lecce.it (A cura: Luciano Mangia)
+L'Acchiappialibro   -> Dataset su dati.comune.lecce.it (A cura: Nuccio Massimiliano)
+Defibrillatori DAE  -> Dataset su dati.comune.lecce.it (A cura: Alessandro Tondi)
+Aree sosta          -> Dataset su dati.comune.lecce.it (A cura: Alessandro Tondi)
+Stalli parc.disab.  -> Dataset su dati.comune.lecce.it (A cura: Alessandro Tondi)
+Parcometri          -> Dataset su dati.comune.lecce.it (A cura: Alessandro Tondi)
+Farmacie            -> Dataset su dati.comune.lecce.it (A cura: Lucio Stefanelli)
+Monumenti           -> Dataset su dati.comune.lecce.it (A cura: Annarita Cairella)
+Traffico            -> Dataset su dati.comune.lecce.it (Sarà a cura: Luisella Gallucci)
+Mensa scolastica    -> Dataset su dati.comune.lecce.it (A cura: Nuccio Massimiliano)
+openCimitero        -> prossimamente
+Hot Spot            -> Dataset su dati.comune.lecce.it (A cura: Andrea Lezzi)
+Bandi ed esiti gare -> Dataset su dati.comune.lecce.it (A cura: Andrea Lezzi)
+News                -> Dataset su dati.comune.lecce.it (A cura: Andrea Lezzi)
+orari Scuole        -> Dataset su dati.comune.lecce.it (A cura: Nuccio Massimiliano e Elisabetta Indennitate)
+Luoghi accessibili  -> Dataset su openstreemap Lic. odBL alimentato dalla comunità
+Benzinai            -> Dataset su openstreemap Lic. odBL alimentato dalla comunità
+Musei               -> Dataset su openstreemap Lic. odBL alimentato dalla comunità
+Meteo e temperatura -> Api pubbliche di www.wunderground.com\n
+Applicazione sviluppata da Francesco Piero Paolicelli @piersoft. Codice sorgente per il riuso gratuito: https://goo.gl/bmUNbK
           ");
 
 				 $content = array('chat_id' => $chat_id, 'text' => $reply,'disable_web_page_preview'=>true);
@@ -786,7 +833,7 @@ $db = NULL;
     $contentp = array('chat_id' => $chat_id, 'photo' => $img);
     $telegram->sendPhoto($contentp);
 
-      $content = array('chat_id' => $chat_id, 'text' => "Istituita presso la sede dell’Assessorato alla Pubblica Istruzione in viale Ugo Foscolo 31/a, con la finalità di allargare la comunità dei lettori offre nuovo servizio acquisisce attraverso spontanee liberalità da parte di enti, cittadini, imprenditori, libri per tutte le età, da destinare alle biblioteche scolastiche, alle famiglie in situazioni di disagio e a tutti coloro che in generale amano la lettura. I libri usati ed in ottimo stato di conservazione sono a disposizione di chiunque.Si può quindi ritirare un libro usato e portarne un altro. Giorni e orari del servizio: martedì pomeriggio dalle alle 16.00 alle ore 17.30 mercoledì mattina dalle alle 10.00 alle ore 12.00. Per ricercare un libro, basta anteporre il carattere - (meno) alla parola da cercare; può essere sia una parte del titolo che dell'autore. Esempio -Tamaro piuttosto che -Cuore.\nAttenzione i caratteri maiuscoli e minuscoli sono differenti.\n( -Cuore è diverso da -cuore ).\nPer l'elenco completo puoi visitare questo link: http://goo.gl/JBCSAb", 'reply_to_message_id' =>$bot_request_message_id,'disable_web_page_preview'=>true);
+      $content = array('chat_id' => $chat_id, 'text' => "Istituita presso la sede dell’Assessorato alla Pubblica Istruzione in viale Ugo Foscolo 31/a, con la finalità di allargare la comunità dei lettori offre nuovo servizio acquisisce attraverso spontanee liberalità da parte di enti, cittadini, imprenditori, libri per tutte le età, da destinare alle biblioteche scolastiche, alle famiglie in situazioni di disagio e a tutti coloro che in generale amano la lettura. I libri usati ed in ottimo stato di conservazione sono a disposizione di chiunque. Si può quindi ritirare un libro usato e portarne un altro. Giorni e orari del servizio: martedì pomeriggio dalle alle 16.00 alle ore 17.30 mercoledì mattina dalle alle 10.00 alle ore 12.00. Per ricercare un libro, basta anteporre il carattere - (meno) alla parola da cercare; può essere sia una parte del titolo che dell'autore. Esempio -Tamaro piuttosto che -Cuore.\nAttenzione i caratteri maiuscoli e minuscoli sono differenti.\n( -Cuore è diverso da -cuore ).\nPer l'elenco completo puoi visitare questo link: http://goo.gl/JBCSAb", 'disable_web_page_preview'=>true);
 
       $telegram->sendMessage($content);
 
@@ -803,8 +850,10 @@ $db = NULL;
       $telegram->sendMessage($content);
       exit;
 			//----- gestione segnalazioni georiferite : togliere per non gestire le segnalazioni georiferite -----
-    }elseif($location!=null)
+    }elseif($location != null)
       {
+
+
       //  $reply = "Funzione non ancora implementata";
 
     //    $content = array('chat_id' => $chat_id, 'text' => $reply);
@@ -813,18 +862,25 @@ $db = NULL;
         exit;
 
       }
+elseif (strpos($text,'/dae') !== false || strpos($text,'/farmacie') !== false ||strpos($text,'/musei') !== false ||strpos($text,'/benzine') !== false ||strpos($text,'/sosta') !== false ||strpos($text,'/parcometri') !== false || strpos($text,'/stalli') !== false || strpos($text,'/accessibili') !== false )
+//
 
-			elseif($reply_to_msg != NULL)
+	//		elseif($reply_to_msg != null)
 			{
-    //    $reply ="prova";
-    //    $content = array('chat_id' => $chat_id, 'text' => $reply);
-    //    $telegram->sendMessage($content);
+
 				//inserisce la segnalazione nel DB delle segnalazioni georiferite
 
         $response=$telegram->getData();
 
     $type=$response["message"]["video"]["file_id"];
     $text =$response["message"]["text"];
+      if (strpos($text,'/') !== false){
+            $text=str_replace("/","",$text);
+      }
+  //  if (strpos($text,'/dae') !== false || strpos($text,'/farmacie') !== false ||strpos($text,'/musei') !== false ||strpos($text,'/benzine') !== false ||strpos($text,'/sosta') !== false ||strpos($text,'/parcometri') !== false || strpos($text,'/stalli') !== false || strpos($text,'/accessibili') !== false )
+  //  {
+  //    $text=str_replace("/","",$text);
+  //  }
     $risposta="";
     $file_name="";
     $file_path="";
@@ -899,7 +955,7 @@ $db = NULL;
     			print_r($reply_to_msg['message_id']);
     			$db->exec($statement);
 
-    if ($text==="location" || $text==="benzine" || $text==="farmacie" || $text==="musei" || $text==="fermate" || $text==="sosta" || $text==="defibrillatori1"|| $text==="DAE"|| $text==="dae" || $text=="hotspot" || $text=="Hot Spot"|| $text=="hot spot" || $text ==="stalli"|| $text ==="accessibili")
+    if ($text==="location" || $text==="benzine" || $text==="farmacie" || $text==="musei" || $text==="fermate" || $text==="sosta" || $text==="defibrillatori1"|| $text==="DAE"|| $text==="dae" || $text==="Dae" || $text==="dae" || $text=="hotspot" || $text=="Hot Spot"|| $text=="hot spot" || $text ==="stalli"|| $text ==="accessibili" || $text="parcometri")
     {
       $around=AROUND;
     	$tag="amenity=pharmacy";
@@ -916,6 +972,8 @@ $db = NULL;
             $telegram->sendMessage($content);
 
               $log=$today. ",sosta sent," .$chat_id. "\n";
+              $this->create_keyboard($telegram,$chat_id);
+
               exit;
           }
           elseif ($text==="location") {
@@ -948,20 +1006,24 @@ $db = NULL;
     $tag="highway=bus_stop";
     $around=500;
     }
-    elseif ($text==="defibrillatori" || $text==="dae" || $text==="DAE"){
+    elseif ($text==="defibrillatori" || $text==="dae" || $text==="DAE" || $text==="Dae"){
       $tag="emergency=defibrillator";
       $around=500;
+    //  $suffisso="Puoi visualizzarli su mappa:\nhttp://dati.comune.lecce.it/bot/dae/locator.php?"
     }
     elseif ($text==="hotspot" || $text==="Hot Spot" || $text=="hot spot"){
       $tag="internet_access=wlan";
       $nome="Hot Spot Lecce Wireless";
       $around=500;
+    }elseif ($text==="parcometri"){
+      $tag="vending=parking_tickets";
+      $around=200;
     }
 
 
     	      $lon=$row[0]['lng'];
     				$lat=$row[0]['lat'];
-    	//prelevo dati da OSM sulla base della mia posizione
+    	         //prelevo dati da OSM sulla base della mia posizione
     					$osm_data=give_osm_data($lat,$lon,$tag,$around);
 
     					//rispondo inviando i dati di Openstreetmap
@@ -976,23 +1038,24 @@ $db = NULL;
                 $long10="";
                 $data="";
     						foreach ($osm_element->tag as $key) {
+
                   //print_r($key);
-    							if ($key['k']=='name' || $key['k']=='wheelchair' || $key['k']=='phone' || $key['k']=='addr:street' || $key['k']=='bench'|| $key['k']=='shelter')
+    							if ($key['k']=='name' || $key['k']=='wheelchair' || $key['k']=='phone' || $key['k']=='addr:street' || $key['k']=='bench'|| $key['k']=='shelter' || $key['k']=='wheelchair' || $key['k']=='ref')
     							{
                     $valore=utf8_encode($key['v']);
                     $valore=str_replace("yes","si",$valore);
-
-    							if ($key['k']=='wheelchair')
+                	if ($key['k']=='wheelchair')
     									{
-
     											$valore=str_replace("limited","con limitazioni",$valore);
     											$nome .="Accessibile in carrozzella: ".$valore;
     									}
+
     							if ($key['k']=='phone')	$nome  .="Telefono: ".utf8_encode($key['v'])."\n";
     							if ($key['k']=='addr:street')	$nome .="Indirizzo: ".utf8_encode($key['v'])."\n";
     							if ($key['k']=='name')	$nome  .="Nome: ".utf8_encode($key['v'])."\n";
 	                if ($key['k']=='bench')	$nome  .="Panchina: ".$valore."\n";
                   if ($key['k']=='shelter')	$nome  .="Pensilina: ".$valore."\n";
+                  if ($key['k']=='ref')	$nome .="Parcometro: ".$valore;
 
                   }
 
@@ -1069,15 +1132,22 @@ if ($miles >=1){
     					//crediti dei dati
     					if((bool)$osm_data_dec->node)
     					{
-    						$content = array('chat_id' => $chat_id, 'text' => utf8_encode($text." attorno alla tua posizione entro ".$around." \n(dati forniti tramite OpenStreetMap. Licenza ODbL (c) OpenStreetMap contributors)"));
-    						$bot_request_message=$telegram->sendMessage($content);
+    					$risposta=utf8_encode($text." attorno alla tua posizione entro ".$around." \n(dati forniti tramite OpenStreetMap. Licenza ODbL (c) OpenStreetMap contributors)");
+if ($text=="defibrillatori" || $text=="dae" || $text=="DAE" || $text==="Dae"){
+$risposta .="\nPuoi visualizzarli su http://www.piersoft.it/dae/locator.php?lat=".$osm_element['lat']."&lon=".$osm_element['lon']."&r=0.5";
+}
+if ($text=="parcometri"){
+$risposta .="\nPuoi visualizzarli su http://www.piersoft.it/parcometri/locator.php?lat=".$osm_element['lat']."&lon=".$osm_element['lon']."&r=0.2";
+}
+	$content = array('chat_id' => $chat_id, 'text' => $risposta);
+                $bot_request_message=$telegram->sendMessage($content);
     					}else
     					{
     						$content = array('chat_id' => $chat_id, 'text' => utf8_encode("Non ci sono sono ".$text." vicini, mi spiace! Se ne conosci uno nelle vicinanze mappalo su www.openstreetmap.org"),'disable_web_page_preview'=>true);
     						$bot_request_message=$telegram->sendMessage($content);
     					}
     }
-
+      
 
    else{
 
@@ -1158,7 +1228,7 @@ if ($miles >=1){
 	 function create_keyboard($telegram, $chat_id)
 		{
 			//	$option = array(["meteo oggi","previsioni"],["bollettini rischi","temperatura"],["eventi culturali","qualità aria"],["mensa scuole","orari scuole"],["tariffasosta","monumenti"],["defibrillatori","traffico"],["spese correnti","l'acchiappialibro"],["informazioni"]);
-        $option = array(["meteo oggi","previsioni"],["temperatura","qualità aria"],["bollettini rischi","traffico"],["eventi culturali","l'acchiappalibro"],["monumenti","tariffasosta"],["mensa scuole","orari scuole"],["bandi e gare","spese correnti"],["Hot Spot","defibrillatori"],["News","informazioni"]);
+        $option = array(["meteo oggi","previsioni"],["temperatura","qualità aria"],["bollettini rischi","traffico"],["eventi culturali","l'acchiappalibro"],["parcometri","tariffasosta"],["luoghi accessibili","stalli parc.disab."],["mensa scuole","orari scuole"],["defibrillatori","spese correnti"],["Hot Spot","monumenti"],["News","bandi e gare"],["informazioni"]);
       	$keyb = $telegram->buildKeyBoard($option, $onetime=false);
 				$content = array('chat_id' => $chat_id, 'reply_markup' => $keyb, 'text' => "[seleziona un'etichetta oppure clicca sulla graffetta \xF0\x9F\x93\x8E e poi 'posizione'. ]");
 				$telegram->sendMessage($content);
@@ -1196,21 +1266,15 @@ if ($miles >=1){
           $content = array('chat_id' => $chat_id, 'reply_markup' => $keyb, 'text' => "[Seleziona il luogo di interesse. ]");
           $telegram->sendMessage($content);
       }
-	//controlla le condizioni per gestire le notifiche automatiche
-	function broadcast_manager($db,$telegram)
-		{
-			//gestione allarmi da completare.
-			if(check_alarm())
-			{
-				sendMessagetoAll($db,$telegram,'message','Prova messaggio broadcast');
-			}
-		}
-
 
 
   function location_manager($latgl,$longl,$db,$telegram,$user_id,$chat_id,$location)
   	{
 
+    //  $reply ="Sezione del bot in manutenzione. ci scusiamo per il disagio ma stiamo lavorando per voi";
+
+    // $content = array('chat_id' => $chat_id, 'text' => $reply);
+    //  $telegram->sendMessage($content);
 
   			$lon=$location["longitude"];
   			$lat=$location["latitude"];
@@ -1230,18 +1294,18 @@ if ($miles >=1){
   			//nascondo la tastiera e forzo l'utente a darmi una risposta
 
 	$forcehidek=$telegram->buildKeyBoardHide(true);
-  $content = array('chat_id' => $chat_id, 'text' => "[Cosa vuoi comunicarci su questo posto? oppure digita:\n\ndae o farmacie o musei o benzine o sosta\n(tutto minuscolo).\n\nLe indicheremo quelli più vicini] ", 'reply_markup' =>$forcehide, 'reply_to_message_id' =>$bot_request_message_id);
+  $content = array('chat_id' => $chat_id, 'text' => "[Puoi cliccare:\n\n/dae (defribillatori)\n/farmacie\n/musei\n/benzine\n/sosta (zona tariffata parcheggio)\n/parcometri (parcometri più vicini)\n/stalli (sosta per disabili)\n/accessibili (luoghi accessibili in carrozzella)\n\nTi indicheremo quelli più vicini] ", 'reply_markup' =>$forcehidek);
 
   $bot_request_message=$telegram->sendMessage($content);
 
-      	$forcehide=$telegram->buildForceReply(true);
+  //  	$forcehide=$telegram->buildForceReply(true);
+	//chiedo cosa sta accadendo nel luogo
+ 	//	$content = array('chat_id' => $chat_id, 'text' => "[Scrivici cosa sta accadendo qui]", 'reply_markup' =>$forcehide, 'reply_to_message_id' =>$bot_request_message_id);
 
-  			//chiedo cosa sta accadendo nel luogo
-// 		$content = array('chat_id' => $chat_id, 'text' => "[Scrivici cosa sta accadendo qui]", 'reply_markup' =>$forcehide, 'reply_to_message_id' =>$bot_request_message_id);
+        $content1 = array('chat_id' => $chat_id, 'text' => $reply, 'reply_markup' =>$forcehide, 'reply_to_message_id' =>$bot_request_message_id);
 
-        $content = array('chat_id' => $chat_id, 'text' => "[digita: dae o farmacie o musei o benzine o sosta]", 'reply_markup' =>$forcehide, 'reply_to_message_id' =>$bot_request_message_id);
+        $bot_request_message=$telegram->sendMessage($content1);
 
-        $bot_request_message=$telegram->sendMessage($content);
 
 
   			//memorizzare nel DB
@@ -1249,11 +1313,12 @@ if ($miles >=1){
   			$id=$obj->result;
   			$id=$id->message_id;
 
+
   			//print_r($id);
     		$statement = "INSERT INTO ". DB_TABLE_GEO. " (lat,lng,user,username,text,bot_request_message,time,file_id,file_path,filename,first_name) VALUES ('" . $lat . "','" . $lon . "','" . $user_id . "',' ',' ','". $id ."','". $timec ."',' ',' ',' ',' ')";
         $db->query($statement);
 
-
+exit;
         }
 
 

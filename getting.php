@@ -440,9 +440,10 @@ $temp_c1 .="\n<br>";
     	for ($i=0;$i<$count;$i++){
       $temp_c1 .="\n\n";
       $mese=  substr_replace($parsed_json->{'data'}[$i]->{'imp_uscite_att'}, ",", -2, 0);
-      $annoprecedente=substr_replace($parsed_json->{'data'}[$i]->{'importo_2014'}, ",", -2, 0);
-      $annoincorso=substr_replace($parsed_json->{'data'}[$i]->{'importo_2015'}, ",", -2, 0);
-      $temp_c1 .= "Ricerca per: ".$parsed_json->{'data'}[$i]->{'ricerca'}."\nTrovata la voce: ".$parsed_json->{'data'}[$i]->{'descrizione_codice'}."\nCodice Siope: ".$parsed_json->{'data'}[$i]->{'codice_siope'}."\nNel periodo ".$parsed_json->{'data'}[$i]->{'periodo'}."/".$parsed_json->{'data'}[$i]->{'anno'}." spesi: ".$mese."€\nNel 2014 sono stati spesi: ".$annoprecedente."€\nIl progressivo 2015 è ".$annoincorso."€";
+      $annoprecedente14=substr_replace($parsed_json->{'data'}[$i]->{'importo_2014'}, ",", -2, 0);
+      $annoprecedente15=substr_replace($parsed_json->{'data'}[$i]->{'importo_2015'}, ",", -2, 0);
+      $annoincorso=substr_replace($parsed_json->{'data'}[$i]->{'importo_2016'}, ",", -2, 0);
+      $temp_c1 .= "Ricerca per: ".$parsed_json->{'data'}[$i]->{'ricerca'}."\nTrovata la voce: ".$parsed_json->{'data'}[$i]->{'descrizione_codice'}."\nCodice Siope: ".$parsed_json->{'data'}[$i]->{'codice_siope'}."\nNel periodo ".$parsed_json->{'data'}[$i]->{'periodo'}."/".$parsed_json->{'data'}[$i]->{'anno'}." spesi: ".$mese."€\nNel 2014 sono stati spesi: ".$annoprecedente14."€\nNel 2015 sono stati spesi: ".$annoprecedente15."€\nIl progressivo 2016 è ".$annoincorso."€";
       $temp_c1 .="\n";
 
     }
