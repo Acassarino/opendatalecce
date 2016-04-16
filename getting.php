@@ -51,14 +51,14 @@ class getdata {
         array_push($diva3,$div3->nodeValue);
 
     }
-
+// prove di scraping passando da google sheet
     //$titolo=str_replace(" ","%20",$titolo);
     //$url ="https://docs.google.com/spreadsheets/d/1bjEGyI0uXDoiwwPFJGUVmpVLzbp3P5C16t8Zdub2zis/pub?output=csv";
 
-    $csv = array_map('str_getcsv', file("https://spreadsheets.google.com/tq?tqx=out:csv&tq=SELECT%20A%20WHERE%20A%20IS%20NOT%20NULL%20&key=1V2WgbYbTVT2ICsZVcSxLPxsPSJ67U1qkeW2GEep38VQ"));
+    //  $csv = array_map('str_getcsv', file("https://spreadsheets.google.com/tq?tqx=out:csv&tq=SELECT%20A%20WHERE%20A%20IS%20NOT%20NULL%20&key=1V2WgbYbTVT2ICsZVcSxLPxsPSJ67U1qkeW2GEep38VQ"));
 
-    $inizio=1;
-    $homepage ="";
+   // $inizio=1;
+   // $homepage ="";
     //  echo $url;
     //$csv = array_map('str_getcsv', file($url));
 
