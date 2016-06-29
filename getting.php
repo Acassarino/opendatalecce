@@ -147,8 +147,46 @@ class getdata {
   return   $alert;
     }
 
+    public function get_matrimonio()
+        {
 
-        public function get_oc($titolo)
+          $url ="https://goo.gl/zZaYbN";
+
+          $inizio=1;
+          $homepage ="";
+         //  echo $url;
+          $csv = array_map('str_getcsv', file($url));
+
+          $count = 0;
+          foreach($csv as $data=>$csv1){
+            $count = $count+1;
+          }
+          if ($count == 0 || $count == 1){
+            $homepage="Nessun risultato";
+            return   $homepage;
+          }
+          if ($count > 40){
+            $homepage="Troppi risultati, affina la ricerca";
+            return   $homepage;
+          }
+
+        //  echo $count;
+          for ($i=$inizio;$i<$count;$i++){
+
+            $homepage .="\n";
+            $homepage .="Luogo: ".$csv[$i][0]."\n";
+            if ($csv[$i][1] !=NULL)$homepage .="Ubicazione: ".$csv[$i][1]."\n";
+            if ($csv[$i][2] !=NULL)$homepage .="Possibilità allestimento: ".$csv[$i][2]."\n";
+            if ($csv[$i][3] !=NULL)$homepage .="Gratuità: ".$csv[$i][3]."\n";
+            if ($csv[$i][4] !=NULL)$homepage .="Note: ".$csv[$i][4]."\n";
+            if ($csv[$i][5] !=NULL)$homepage .="Capienza: ".$csv[$i][5]."\n";
+            $homepage .="____________\n";
+
+        }
+      return   $homepage;
+      }
+
+    public function get_oc($titolo)
         {
           $titolo=str_replace(" ","%20",$titolo);
           $titolo=strtoupper($titolo);
@@ -188,13 +226,81 @@ class getdata {
         }
       return   $homepage;
       }
+      public function get_sedi($titolo)
+          {
+
+            $titolo=str_replace(" ","%20",$titolo);
+          //  $titolo=str_replace("à","%E0",$titolo);
+            $titolo=strtoupper($titolo);
+            $url ="https://spreadsheets.google.com/tq?tqx=out:csv&tq=SELECT%20%2A%20WHERE%20upper(A)%20LIKE%20%27%25";
+            $url .=$titolo;
+            $url .="%25%27&key=1l9NE7LDK7Px6gB4zdEoFh6aY0b2fV2tAk45GMxSmc-c&gid=0";
+            $inizio=1;
+            $homepage ="";
+           //  echo $url;
+            $csv = array_map('str_getcsv', file($url));
+            $count = 0;
+            foreach($csv as $data=>$csv1){
+              $count = $count+1;
+            }
+            if ($count == 0 || $count == 1){
+              $homepage="Nessun risultato";
+              return   $homepage;
+            }
+            if ($count > 40){
+              $homepage="Troppi risultati, affina la ricerca";
+              return   $homepage;
+            }
+
+          //  echo $count;
+            for ($i=$inizio;$i<$count;$i++){
+
+              $homepage .="\n";
+              $homepage .=$csv[$i][1]."\nsito in: ".$csv[$i][2]." ".$csv[$i][3]." ".$csv[$i][4].", ".$csv[$i][5];
+              if ($csv[$i][8] !=NULL)$homepage .="\nApertura al pubblico:\n".$csv[$i][8];
+              if ($csv[$i][7] !=NULL)  $homepage.="\nMappa :\nhttp://www.openstreetmap.org/?mlat=".$csv[$i][6]."&mlon=".$csv[$i][7]."#map=19/".$csv[$i][6]."/".$csv[$i][7];
+              $homepage .="\n____________\n";
+
+          }
+        return   $homepage;
+        }
+        public function get_uffici()
+            {
+
+              $url ="https://spreadsheets.google.com/tq?tqx=out:csv&tq=SELECT%20%2A%20&key=1l9NE7LDK7Px6gB4zdEoFh6aY0b2fV2tAk45GMxSmc-c&gid=2066323693";
+              $inizio=0;
+              $homepage ="";
+             //  echo $url;
+              $csv = array_map('str_getcsv', file($url));
+              $count = 0;
+              foreach($csv as $data=>$csv1){
+                $count = $count+1;
+              }
+              if ($count == 0 || $count == 1){
+                $homepage="Nessun risultato";
+                return   $homepage;
+              }
+              if ($count > 40){
+                $homepage="Troppi risultati, affina la ricerca";
+                return   $homepage;
+              }
+
+            //  echo $count;
+              for ($i=$inizio;$i<$count;$i++){
+
+                $homepage .=$csv[$i][0]."\n";
+
+            }
+          return   $homepage;
+          }
 
   public function get_libro($titolo)
   {
+    $titolo=strtoupper($titolo);
     $titolo=str_replace(" ","%20",$titolo);
-    $url ="https://spreadsheets.google.com/tq?tqx=out:csv&tq=SELECT%20%2A%20WHERE%20C%20LIKE%20%27%25".$titolo;
-    $url .="%25%27%20OR%20B%20LIKE%20%27%25".$titolo;
-    $url .="%25%27&key=1gqlrIL9qch6Ir9cXxkn0sOjyDwSA5uYM_hD7MX_q6Cs";
+    $url ="https://spreadsheets.google.com/tq?tqx=out:csv&tq=SELECT%20%2A%20WHERE%20upper(C)%20LIKE%20%27%25".$titolo;
+    $url .="%25%27%20OR%20upper(B)%20LIKE%20%27%25".$titolo;
+    $url .="%25%27&key=1gqlrIL9qch6Ir9cXxkn0sOjyDwSA5uYM_hD7MX_q6Cs&gid=0";
     $inizio=1;
     $homepage ="";
    //  echo $url;
