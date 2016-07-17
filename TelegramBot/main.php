@@ -279,7 +279,21 @@ $db = NULL;
 
             }
                   $log=$today. ",bandi e gare sent," .$chat_id. "\n";
-          }elseif (strpos($text,'c:') !== false) {
+          }  elseif ($text == "/farmacie aperte ora" || $text == "farmacie aperte ora") {
+              $reply = "Sto interrogando la banca dati ...\n";
+              $content = array('chat_id' => $chat_id, 'text' => $reply,'disable_web_page_preview'=>true);
+              $telegram->sendMessage($content);
+              sleep(2);
+              $reply1 = $data->get_farmacienow();
+              $chunks = str_split($reply1, self::MAX_LENGTH);
+              foreach($chunks as $chunk) {
+
+                  $content = array('chat_id' => $chat_id, 'text' => $chunk,'disable_web_page_preview'=>true,'parse_mode'=>"HTML");
+                  $telegram->sendMessage($content);
+
+              }
+                    $log=$today. ",farmacie aperte," .$chat_id. "\n";
+            }elseif (strpos($text,'c:') !== false) {
             $text=str_replace("c:","",$text);
             $reply = "Sto cercando l'ubicazione per il defunto: ".$text;
             $content = array('chat_id' => $chat_id, 'text' => $reply,'disable_web_page_preview'=>true);
@@ -379,6 +393,7 @@ $db = NULL;
           $img = curl_file_create('dae.png','image/png');
           $contentp = array('chat_id' => $chat_id, 'photo' => $img);
           $telegram->sendPhoto($contentp);
+          /*
           $avviso ="\nInterrogazione in corso al database opendata...";
 
           $content = array('chat_id' => $chat_id, 'text' => $avviso,'disable_web_page_preview'=>true);
@@ -387,8 +402,8 @@ $db = NULL;
         $reply = $data->get_dae();
       //  $reply ="servizio in manutenzione per i luoghi puntuali.";
         $reply .="\nPer vedere tutti i luoghi dove è presente un defibrillatore (DAE) clicca qui:\nhttp://u.osmfr.org/m/54531/";
-
-        $reply .="\nPer vedere invece i luoghi dove è presente un defribillatore (DAE) nel raggio di 500mt,\nallora invia la tua posizione cliccando la graffetta \xF0\x9F\x93\x8E e poi digita: DAE";
+*/
+        $reply .="\nPer vedere i luoghi dove è presente un defribillatore (DAE) nel raggio di 500mt,\ninvia la tua posizione cliccando la graffetta \xF0\x9F\x93\x8E e poi clicca su /dae";
 
   $chunks = str_split($reply, self::MAX_LENGTH);
         foreach($chunks as $chunk) {
@@ -552,7 +567,7 @@ $db = NULL;
 				$log=$today. ",aria sent," .$chat_id. "\n";
 
 			}elseif ($text == "/traffico" || $text == "traffico") {
-      $reply = "Segnalazione Demo/Test non reale".$data->get_traffico("lecce");
+      $reply = $data->get_traffico("lecce");
       $content = array('chat_id' => $chat_id, 'text' => $reply,'disable_web_page_preview'=>true);
       $telegram->sendMessage($content);
 			$log=$today. ",traffico sent," .$chat_id. "\n";
@@ -572,10 +587,14 @@ $db = NULL;
   				$log=$today. ",monumenti sent," .$chat_id. "\n";
 
 		}elseif ($text == "/mensa scuole" || $text == "mensa scuole") {
+
+      $reply = "Le mense scolastiche riprenderanno ad ottobre";
+      $content = array('chat_id' => $chat_id, 'text' => $reply,'disable_web_page_preview'=>true);
+      $telegram->sendMessage($content);
       $log=$today. ",mense requested," .$chat_id. "\n";
-      $this->create_keyboard_temp_mensa($telegram,$chat_id);
-      exit;
-    }elseif ($text == "/Infanzia_Aut_Inverno" || $text == "Infanzia_Aut_Inverno"){
+    //  $this->create_keyboard_temp_mensa($telegram,$chat_id);
+    //  exit;
+  }elseif ($text == "/Infanzia_Aut_Inverno" || $text == "Infanzia_Aut_Inverno" ||$text == "mensademo" ){
       $avviso ="\nInterrogazione in corso al database opendata...";
 
       $content = array('chat_id' => $chat_id, 'text' => $avviso,'disable_web_page_preview'=>true);
@@ -890,7 +909,7 @@ $db = NULL;
 			}
 			//crediti
 			elseif ($text == "/informazioni" || $text == "informazioni") {
-				 $reply = ("openDataLecceBot e' un servizio sperimentale e dimostrativo per riuso degli openData del Comune di Lecce.\n
+				 $reply = ("openDataLecceBot e' un servizio per il riuso degli openData del Comune di Lecce.\n
 Fonti:
 Spese Correnti      -> Soldipubblici.gov.it Lic. CC-BY 3.0
 Bollettini rischi   -> Protezione Civile di Lecce - dataset su dati.comune.lecce.it tramite il progetto InfoAlert365 (A cura: Gaetano Lipari)
@@ -911,6 +930,7 @@ Hot Spot            -> Dataset su dati.comune.lecce.it (A cura: Andrea Lezzi)
 Bandi ed esiti gare -> Dataset su dati.comune.lecce.it (A cura: Andrea Lezzi)
 News                -> Dataset su dati.comune.lecce.it (A cura: Andrea Lezzi)
 orari Scuole        -> Dataset su dati.comune.lecce.it (A cura: Nuccio Massimiliano e Elisabetta Indennitate)
+Farmacie aperte     -> Dati su http://www.sanita.puglia.it/gestione-farmacie-di-turno lic. cc-by Regione Puglia
 Luoghi accessibili  -> Dataset su openstreemap Lic. odBL alimentato dalla comunità
 Benzinai            -> Dataset su openstreemap Lic. odBL alimentato dalla comunità
 Musei               -> Dataset su openstreemap Lic. odBL alimentato dalla comunità
@@ -1397,7 +1417,7 @@ if ($miles >=1){
     					{
     					$risposta=utf8_encode($text." attorno alla tua posizione entro ".$around." \n(dati forniti tramite OpenStreetMap. Licenza ODbL (c) OpenStreetMap contributors)");
 if ($text=="defibrillatori" || $text=="dae" || $text=="DAE" || $text==="Dae"){
-$risposta .="\nPuoi visualizzarli su http://www.piersoft.it/dae/locator.php?lat=".$osm_element['lat']."&lon=".$osm_element['lon']."&r=0.5";
+$risposta .="\nPuoi visualizzarli su http://www.piersoft.it/daebot/map/index.php?lat=".$osm_element['lat']."&lon=".$osm_element['lon']."&r=0.5";
 }
 if ($text=="parcometri"){
 $risposta .="\nPuoi visualizzarli su http://www.piersoft.it/parcometri/locator.php?lat=".$osm_element['lat']."&lon=".$osm_element['lon']."&r=0.2";
@@ -1491,7 +1511,7 @@ $risposta .="\nPuoi visualizzarli su http://www.piersoft.it/parcometri/locator.p
 	 function create_keyboard($telegram, $chat_id)
 		{
 			//	$option = array(["meteo oggi","previsioni"],["bollettini rischi","temperatura"],["eventi culturali","qualità aria"],["mensa scuole","orari scuole"],["tariffasosta","monumenti"],["defibrillatori","traffico"],["spese correnti","l'acchiappialibro"],["informazioni"]);
-        $option = array(["meteo oggi","previsioni"],["temperatura","qualità aria"],["bollettini rischi","trasporti"],["eventi culturali","l'acchiappalibri"],["parcometri","tariffasosta"],["luoghi accessibili","stalli parc.disab."],["mensa scuole","orari scuole"],["defibrillatori","spese correnti"],["Hot Spot","monumenti"],["News","bandi e gare"],["matrimoni","uffici comunali"],["informazioni"]);
+        $option = array(["meteo oggi","previsioni"],["temperatura","qualità aria"],["bollettini rischi","trasporti"],["eventi culturali","l'acchiappalibri"],["parcometri","tariffasosta"],["luoghi accessibili","stalli parc.disab."],["mensa scuole","orari scuole"],["defibrillatori","farmacie aperte ora"],["Hot Spot","monumenti"],["News","bandi e gare"],["matrimoni","uffici comunali"],["spese correnti","traffico"],["informazioni"]);
       	$keyb = $telegram->buildKeyBoard($option, $onetime=false);
 				$content = array('chat_id' => $chat_id, 'reply_markup' => $keyb, 'text' => "[seleziona un'etichetta oppure clicca sulla graffetta \xF0\x9F\x93\x8E e poi 'posizione'. ]");
 				$telegram->sendMessage($content);

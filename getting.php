@@ -51,14 +51,14 @@ class getdata {
         array_push($diva3,$div3->nodeValue);
 
     }
-// prove di scraping passando da google sheet
+
     //$titolo=str_replace(" ","%20",$titolo);
     //$url ="https://docs.google.com/spreadsheets/d/1bjEGyI0uXDoiwwPFJGUVmpVLzbp3P5C16t8Zdub2zis/pub?output=csv";
 
-    //  $csv = array_map('str_getcsv', file("https://spreadsheets.google.com/tq?tqx=out:csv&tq=SELECT%20A%20WHERE%20A%20IS%20NOT%20NULL%20&key=1V2WgbYbTVT2ICsZVcSxLPxsPSJ67U1qkeW2GEep38VQ"));
+    $csv = array_map('str_getcsv', file("https://spreadsheets.google.com/tq?tqx=out:csv&tq=SELECT%20A%20WHERE%20A%20IS%20NOT%20NULL%20&key=1V2WgbYbTVT2ICsZVcSxLPxsPSJ67U1qkeW2GEep38VQ"));
 
-   // $inizio=1;
-   // $homepage ="";
+    $inizio=1;
+    $homepage ="";
     //  echo $url;
     //$csv = array_map('str_getcsv', file($url));
 
@@ -517,7 +517,56 @@ $temp_c1 .="\n<br>";
 
 	}
 
-	//monitoraggio temperatura
+  public function get_farmacienow($where)
+	{
+    $time = date('d/m/Y');
+    exec('curl -v -c db/cookies.txt "http://www.sanita.puglia.it/gestione-farmacie-di-turno" ');
+
+    exec('curl -v -b db/cookies.txt -L "http://www.sanita.puglia.it/web/pugliasalute/gestione-farmacie-di-turno?p_p_id=farmacie_WAR_PugliaSalutePortlet&p_p_lifecycle=2&p_p_state=normal&p_p_mode=view&p_p_resource_id=searchFdt&p_p_cacheability=cacheLevelPage&p_p_col_id=column-1&p_p_col_pos=1&p_p_col_count=2" -H "Host: www.sanita.puglia.it" -H "X-Requested-With: XMLHttpRequest" -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36" -H "Content-Type: application/json; charset=UTF-8" -H "Accept: application/json, text/javascript, */*; q=0.01" -H "Accept-Language: it-IT,it;q=0.8,en-US;q=0.6,en;q=0.4,cs;q=0.2" -H "Accept-Encoding: gzip, deflate, sdch, br" --compressed -H "Referer: http://www.sanita.puglia.it/gestione-farmacie-di-turno" -H "Connection: keep-alive" --data "{\""siglaProvincia\"":\""LE\"",\""codComune\"":\""E506\"",\""nomeComune\"":\""LECCE\"",\""startDate\"":\""'.$time.'\"",\""endDate\"":\""'.$time.'\"",\""checkNow\"":true,\""turni\"":[]}" > db/farmacienow.txt');
+
+    $html = file_get_contents("db/farmacienow.txt");
+    $parsed_json = json_decode($html,true);
+     //var_dump(  $parsed_json); // debug
+    $count = 0;
+
+     $temp="";
+     function getInnerSubstring($string,$delim){
+         // "foo a foo" becomes: array(""," a ","")
+         $string = explode($delim, $string, 3); // also, we only need 2 items at most
+         // we check whether the 2nd is set and return it, otherwise we return an empty string
+         return isset($string[1]) ? $string[1] : '';
+     }
+     // echo $count."<br>";
+     //echo $parsed_json->{'payload'};
+
+     //echo $time;
+     $risposta=json_encode($parsed_json["payload"][0][$time]);
+     //echo $risposta."</br>\n";
+     $aperte=json_decode($risposta,true)[0]["tutteLeFarmacieSonoAperte"];
+     if ($aperte ==1){
+       $temp.="Tutte le farmacie sono aperte";
+       $temp .="\n--------\n";
+     }
+    //var_dump($parsed_json["payload"][1]);
+    foreach($parsed_json["payload"][1] as $data=>$csv1){
+        $count = $count+1;
+        $temp .="🏥  <b>".$csv1["nomeStruttura"]."</b>\n";
+        $temp .="📞  ".$csv1["numeroDiTelefono"]."\n";
+        $temp .="🏳  ".$csv1["indirizzo"]."\n";
+        $coordinate=str_replace("POINT ","",$csv1["coordinate"]);
+        $coordinate=str_replace(")",";",$coordinate);
+        $coordinate=str_replace("(",",",$coordinate);
+        $coordinate=str_replace(" ",",;",$coordinate);
+        $lat=getInnerSubstring($coordinate,";");
+        $lon=getInnerSubstring($coordinate,",");
+        $temp .="🌐  https://www.openstreetmap.org/#map=19/".$lat."/".$lon;
+        $temp .="\n--------\n";
+
+
+     }
+return $temp;
+  }
+
 	public function get_spesecorrenti($where)
 	{
     $where=utf8_decode($where);
@@ -578,6 +627,7 @@ $html=utf8_decode($html);
 	$html =str_replace("Estratto, per la Zona di Allerta del Comune, del Messaggio di Allerta","",$html);
 	$html =str_replace("larea","l&#39;area",$html);
 	$html =str_replace("Articoli meno recenti","",$html);
+	$html =str_replace("if(wpa2a)wpa2a.script_load();","",$html);
 	$html =str_replace("←","",$html);
 
 	$doc = new DOMDocument;
