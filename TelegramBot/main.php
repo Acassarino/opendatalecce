@@ -16,10 +16,12 @@ include("QueryLocation.php");
 $a="";
 $b="";
 
+
+
 class main{
 
-const MAX_LENGTH = 4096;
 
+const MAX_LENGTH = 4096;
 
  function start($telegram,$update)
 	{
@@ -38,20 +40,19 @@ const MAX_LENGTH = 4096;
 		*  $text = $result["message"] ["text"];
 		*  $chat_id = $result["message"] ["chat"]["id"];
 		*/
-    $latgl="";
-    $longl="";
+
 		$text = $update["message"] ["text"];
 		$chat_id = $update["message"] ["chat"]["id"];
 		$user_id=$update["message"]["from"]["id"];
 		$location=$update["message"]["location"];
 		$reply_to_msg=$update["message"]["reply_to_message"];
 
-		$this->shell($latgl,$longl,$telegram, $db,$data,$text,$chat_id,$user_id,$location,$reply_to_msg);
+		$this->shell($telegram, $db,$data,$text,$chat_id,$user_id,$location,$reply_to_msg);
 $db = NULL;
 	}
 
 	//gestisce l'interfaccia utente
-	 function shell($latgl,$longl,$telegram,$db,$data,$text,$chat_id,$user_id,$location,$reply_to_msg)
+	 function shell($telegram,$db,$data,$text,$chat_id,$user_id,$location,$reply_to_msg)
 	{
 		date_default_timezone_set('Europe/Rome');
 		$today = date("Y-m-d H:i:s");
@@ -1050,7 +1051,7 @@ Applicazione sviluppata da Francesco Piero Paolicelli @piersoft. Codice sorgente
 
     //    $content = array('chat_id' => $chat_id, 'text' => $reply);
     //    $telegram->sendMessage($content);
-        $this->location_manager($latgl,$longl,$db,$telegram,$user_id,$chat_id,$location);
+        $this->location_manager($db,$telegram,$user_id,$chat_id,$location);
         exit;
 
       }
@@ -1059,7 +1060,8 @@ elseif (strpos($text,'/dae') !== false || strpos($text,'/farmacie') !== false ||
 
 	//		elseif($reply_to_msg != null)
 			{
-
+        $content = array('chat_id' => $chat_id, 'text' => "Attendere prego.."); // debug
+        $telegram->sendMessage($content);
 				//inserisce la segnalazione nel DB delle segnalazioni georiferite
 
         $response=$telegram->getData();
@@ -1122,8 +1124,12 @@ elseif (strpos($text,'/dae') !== false || strpos($text,'/farmacie') !== false ||
     $username=$response["message"]["from"]["username"];
     $first_name=$response["message"]["from"]["first_name"];
 
+    $var=$reply_to_msg['message_id'];
+  //  $content = array('chat_id' => $chat_id, 'text' => "id".$var); // debug
+
+    $bot_request_message=$telegram->sendMessage($content);
     $db1 = new SQLite3($db_path);
-    $q = "SELECT lat,lng FROM ".DB_TABLE_GEO ." WHERE bot_request_message='".$reply_to_msg['message_id']."'";
+    $q = "SELECT lat,lng FROM ".DB_TABLE_GEO ." WHERE bot_request_message='".$var."'";
     $result=	$db1->query($q);
     $row = array();
     $i=0;
@@ -1143,8 +1149,8 @@ elseif (strpos($text,'/dae') !== false || strpos($text,'/farmacie') !== false ||
     				 }
 
     		//inserisce la segnalazione nel DB delle segnalazioni georiferite
-    			$statement = "UPDATE ".DB_TABLE_GEO ." SET text='".$text."',file_id='". $file_id ."',filename='". $file_name ."',first_name='". $first_name ."',file_path='". $file_path ."',username='". $username ."' WHERE bot_request_message ='".$reply_to_msg['message_id']."'";
-    			print_r($reply_to_msg['message_id']);
+    			$statement = "UPDATE ".DB_TABLE_GEO ." SET text='".$text."',file_id='". $file_id ."',filename='". $file_name ."',first_name='". $first_name ."',file_path='". $file_path ."',username='". $username ."' WHERE bot_request_message ='".$var."'";
+    			print_r($bot_request_message_id);
     			$db->exec($statement);
 
     if ($text==="location" || $text==="benzine" || $text==="farmacie" || $text==="musei" || $text==="fermate" || $text==="sosta" || $text==="defibrillatori1"|| $text==="DAE"|| $text==="dae" || $text==="Dae" || $text==="dae" || $text=="hotspot" || $text=="Hot Spot"|| $text=="hot spot" || $text ==="stalli"|| $text ==="accessibili" || $text==="parcometri"|| $text==="pannolini")
@@ -1205,10 +1211,6 @@ elseif (strpos($text,'/dae') !== false || strpos($text,'/farmacie') !== false ||
     $around=500;
     $lon=$row[0]['lng'];
    $lat=$row[0]['lat'];
-
-  //  $reply ="prova";
-  $lon=$row[0]['lng'];
- $lat=$row[0]['lat'];
  $json_string = file_get_contents("https://transit.land/api/v1/stops?lon=".$lon."&lat=".$lat."&r=".$around);
  $parsed_json = json_decode($json_string);
  $count = 0;
@@ -1291,6 +1293,7 @@ $telegram->sendMessage($content);
     elseif ($text==="defibrillatori" || $text==="dae" || $text==="DAE" || $text==="Dae"){
       $tag="emergency=defibrillator";
       $around=500;
+
     //  $suffisso="Puoi visualizzarli su mappa:\nhttp://dati.comune.lecce.it/bot/dae/locator.php?"
     }
     elseif ($text==="hotspot" || $text==="Hot Spot" || $text=="hot spot"){
@@ -1417,7 +1420,9 @@ if ($miles >=1){
     					{
     					$risposta=utf8_encode($text." attorno alla tua posizione entro ".$around." \n(dati forniti tramite OpenStreetMap. Licenza ODbL (c) OpenStreetMap contributors)");
 if ($text=="defibrillatori" || $text=="dae" || $text=="DAE" || $text==="Dae"){
-$risposta .="\nPuoi visualizzarli su http://www.piersoft.it/daebot/map/index.php?lat=".$osm_element['lat']."&lon=".$osm_element['lon']."&r=0.5";
+//  $content = array('chat_id' => $chat_id, 'text' => $lat." ".$lon);
+//  $bot_request_message=$telegram->sendMessage($content);
+$risposta .="\nPuoi visualizzarli su http://www.piersoft.it/daebot/map/index.php?lat=".$lat."&lon=".$lon."&r=0.5";
 }
 if ($text=="parcometri"){
 $risposta .="\nPuoi visualizzarli su http://www.piersoft.it/parcometri/locator.php?lat=".$osm_element['lat']."&lon=".$osm_element['lon']."&r=0.2";
@@ -1551,20 +1556,17 @@ $risposta .="\nPuoi visualizzarli su http://www.piersoft.it/parcometri/locator.p
       }
 
 
-  function location_manager($latgl,$longl,$db,$telegram,$user_id,$chat_id,$location)
+  function location_manager($db,$telegram,$user_id,$chat_id,$location)
   	{
 
     //  $reply ="Sezione del bot in manutenzione. ci scusiamo per il disagio ma stiamo lavorando per voi";
-
-    // $content = array('chat_id' => $chat_id, 'text' => $reply);
-    //  $telegram->sendMessage($content);
 
   			$lon=$location["longitude"];
   			$lat=$location["latitude"];
 
       	//rispondo
   			$response=$telegram->getData();
-
+		//	$bot_request_message=$response["message"];
   			$bot_request_message_id=$response["message"]["message_id"];
   			$time=$response["message"]["date"]; //registro nel DB anche il tempo unix
 
@@ -1575,9 +1577,10 @@ $risposta .="\nPuoi visualizzarli su http://www.piersoft.it/parcometri/locator.p
   			$timec=str_replace("T"," ",$timec);
   			$timec=str_replace("Z"," ",$timec);
   			//nascondo la tastiera e forzo l'utente a darmi una risposta
+        $forcehide=$telegram->buildForceReply(true);
 
-	$forcehidek=$telegram->buildKeyBoardHide(true);
-  $content = array('chat_id' => $chat_id, 'text' => "[Puoi cliccare:\n\n/dae (defribillatori)\n/fermate (SGM spa)\n/farmacie\n/musei\n/benzine\n/sosta (zona tariffata parcheggio)\n/parcometri (parcometri più vicini)\n/stalli (sosta per disabili)\n/accessibili (luoghi accessibili in carrozzella)\n/pannolini (Contenitore interrato per conferimento pannolini-pannoloni)\n\nTi indicheremo quelli più vicini] ", 'reply_markup' =>$forcehidek);
+	//$forcehidek=$telegram->buildKeyBoardHide(true);
+  $content = array('chat_id' => $chat_id, 'text' => "[Puoi cliccare:\n\n/dae (defribillatori)\n/fermate (SGM spa)\n/farmacie\n/musei\n/benzine\n/sosta (zona tariffata parcheggio)\n/parcometri (parcometri più vicini)\n/stalli (sosta per disabili)\n/accessibili (luoghi accessibili in carrozzella)\n/pannolini (Contenitore interrato per conferimento pannolini-pannoloni)\n\nTi indicheremo quelli più vicini] ", 'reply_markup' =>$forcehide,'reply_to_message_id' =>$bot_request_message_id);
 
   $bot_request_message=$telegram->sendMessage($content);
 
@@ -1585,9 +1588,9 @@ $risposta .="\nPuoi visualizzarli su http://www.piersoft.it/parcometri/locator.p
 	//chiedo cosa sta accadendo nel luogo
  	//	$content = array('chat_id' => $chat_id, 'text' => "[Scrivici cosa sta accadendo qui]", 'reply_markup' =>$forcehide, 'reply_to_message_id' =>$bot_request_message_id);
 
-        $content1 = array('chat_id' => $chat_id, 'text' => $reply, 'reply_markup' =>$forcehide, 'reply_to_message_id' =>$bot_request_message_id);
+    //    $content1 = array('chat_id' => $chat_id, 'text' => $reply, 'reply_markup' =>$forcehide, 'reply_to_message_id' =>$bot_request_message_id);
 
-        $bot_request_message=$telegram->sendMessage($content1);
+//        $bot_request_message=$telegram->sendMessage($content1);
 
 
 
@@ -1596,12 +1599,19 @@ $risposta .="\nPuoi visualizzarli su http://www.piersoft.it/parcometri/locator.p
   			$id=$obj->result;
   			$id=$id->message_id;
 
-
+    //    $content = array('chat_id' => $chat_id, 'text' => "id".$bot_request_message_id); // debug
+    //    $bot_request_message=$telegram->sendMessage($content);
   			//print_r($id);
-    		$statement = "INSERT INTO ". DB_TABLE_GEO. " (lat,lng,user,username,text,bot_request_message,time,file_id,file_path,filename,first_name) VALUES ('" . $lat . "','" . $lon . "','" . $user_id . "',' ',' ','". $id ."','". $timec ."',' ',' ',' ',' ')";
+    		$statement = "INSERT INTO ". DB_TABLE_GEO. " (lat,lng,user,username,text,bot_request_message,time,file_id,file_path,filename,first_name) VALUES ('" . $lat . "','" . $lon . "','" . $user_id . "',' ','".$reply." ','".     $id ."','". $timec ."',' ',' ',' ',' ')";
         $db->query($statement);
 
-exit;
+        global $var ;
+        $var = $id;
+
+
+  //  $content = array('chat_id' => $chat_id, 'text' => $var); // debug
+  //  $bot_request_message=$telegram->sendMessage($content);
+    //exit;
         }
 
 
